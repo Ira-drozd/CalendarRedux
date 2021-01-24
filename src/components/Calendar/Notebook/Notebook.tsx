@@ -1,26 +1,28 @@
 import React from "react";
-import { NotesProps } from "../../../store/type";
+import { DataProps, NotesProps } from "../../../store/type";
+import { connect } from "react-redux";
 
 interface NotebookProps {
-  selectedDay: Date;
-  notes: NotesProps | null;
-  removeNote: (key: string, time: string, message: string) => void;
   setEditMode: (time: string, message: string) => void;
+  intervalMode: Boolean;
 }
 
-const Notebook: React.FC<NotebookProps> = ({
-  selectedDay,
+interface StoreProps {
+  intervalNotes: NotesProps[] | null;
+  notes: NotesProps | null;
+  selectedKey: string;
+}
+
+const Notebook: React.FC<NotebookProps & StoreProps> = ({
+  selectedKey,
   notes,
   setEditMode,
+  intervalMode,
+  intervalNotes,
 }) => {
-  const keyNote: string =
-    selectedDay.getFullYear().toString() +
-    selectedDay.getMonth().toString() +
-    selectedDay.getDate().toString();
-
   const getNotes = () => {
-    if (notes && notes.hasOwnProperty(keyNote)) {
-      return Object.entries(notes[keyNote])
+    if (notes && notes.hasOwnProperty(selectedKey)) {
+      return Object.entries(notes[selectedKey])
         .sort()
         .map((item) => (
           <div className="noteItem" key={item[0]}>
@@ -39,7 +41,37 @@ const Notebook: React.FC<NotebookProps> = ({
     }
   };
 
-  return <div className="notebookContainer">{getNotes()}</div>;
+  const contentIntervalNotes = () => {
+    if (intervalNotes) {
+      return intervalNotes.map((dayObj, index) => (
+        <div key={index}>
+          {Object.keys(dayObj)[0]}
+          {Object.entries(Object.values(dayObj)[0])
+            .sort()
+            .map((item) => (
+              <div className="noteItem" key={item[0]}>
+                <div className="noteData">
+                  <div className="noteDate">{item[0]}</div>
+                </div>
+                <div className="noteMessage">{item[1]}</div>
+              </div>
+            ))}
+        </div>
+      ));
+    } else return <div className="noteItem">Empty...</div>;
+  };
+
+  return (
+    <div className="notebookContainer">
+      {intervalMode ? contentIntervalNotes() : getNotes()}
+    </div>
+  );
 };
 
-export default Notebook;
+const mapStatesToProps = (state: DataProps): StoreProps => ({
+  intervalNotes: state.intervalNotes,
+  notes: state.notes,
+  selectedKey: state.selectedDay.selectedKey,
+});
+
+export default connect(mapStatesToProps)(React.memo(Notebook));

@@ -1,4 +1,6 @@
 export const SWITCH_MONTH = "SWITCH_MONTH";
 export const SET_SELECTED_DAY = "SET_SELECTED_DAY";
+export const SET_SELECTED_DAYS = "SET_SELECTED_DAYS";
+export const SET_INTERVAL_NOTES = "SET_INTERVAL_NOTES";
 export const ADD_NEW_NOTE = "ADD_NEW_NOTE";
 export const REMOVE_NOTE = "REMOVE_NOTE";

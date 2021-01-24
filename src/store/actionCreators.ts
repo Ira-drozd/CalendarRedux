@@ -2,12 +2,12 @@ import * as actionTypes from "./actionTypes";
 import { NoteItem, NotesProps } from "./type";
 import { store } from "../index";
 
-const getDayOfWeek = (selectedDay: any) => {
+const getDayOfWeek = (selectedDay: Date) => {
   const date = selectedDay;
   return date.getDay();
 };
 
-const getLastDay = (month: any, year: any) => {
+const getLastDay = (month: number, year: number) => {
   const date = new Date(year, month + 1, 0);
   return date.getDate();
 };
@@ -80,23 +80,11 @@ export const switchMonth = (date: Date) => {
   };
 };
 
-export const selectNewDay = (selectedDay: Date) => {
-  console.log(selectedDay);
-  return {
-    type: actionTypes.SET_SELECTED_DAY,
-    payload: { selectedDay },
-  };
-};
-
-////error
 export const addNewNote = (key: string, time: string, message: string) => {
   const note: NoteItem = { [time]: message };
   let notes: NotesProps | null;
   const allNotes = store.getState().notes;
-  if (allNotes !== null && !allNotes.hasOwnProperty(key)) {
-    notes = { [key]: note };
-  }
-  if (allNotes !== null) {
+  if (allNotes !== null && allNotes.hasOwnProperty(key)) {
     notes = { [key]: Object.assign({ ...allNotes[key] }, note) };
   } else {
     notes = { [key]: note };
@@ -130,5 +118,79 @@ export const setNewSelectedDay = (date: Date, selectedKey: string) => {
   return {
     type: actionTypes.SET_SELECTED_DAY,
     payload: { selectedDay },
+  };
+};
+
+export const setSelectedDays = (date: Date, selectedKey: string) => {
+  let selectedDays = [...store.getState().selectedDays];
+  if (date > selectedDays[1].date) {
+    selectedDays[1].date = date;
+    selectedDays[1].selectedKey = selectedKey;
+  } else if (date < selectedDays[0].date) {
+    selectedDays[0].date = date;
+    selectedDays[0].selectedKey = selectedKey;
+  } else {
+    selectedDays[1].date = date;
+    selectedDays[1].selectedKey = selectedKey;
+    selectedDays[0].date = date;
+    selectedDays[0].selectedKey = selectedKey;
+  }
+  return {
+    type: actionTypes.SET_SELECTED_DAYS,
+    payload: { selectedDays },
+  };
+};
+
+const getKeyNote = (date: Date) => {
+  return (
+    date.getFullYear().toString() +
+    date.getMonth().toString() +
+    date.getDate().toString()
+  );
+};
+
+const getAllKeys = (dateStart: Date, dateEnd: Date) => {
+  const allDates = [];
+  if (dateStart === dateEnd) {
+    allDates.push(getKeyNote(dateStart));
+  } else {
+    allDates.push(getKeyNote(dateStart));
+    let i = new Date(dateStart);
+    let j = new Date(dateEnd);
+
+    if (i <= j) {
+      for (let d = i; d <= j; d.setDate(d.getDate() + 1)) {
+        allDates.push(getKeyNote(d));
+      }
+    }
+  }
+  return allDates.filter(
+    (value, index, array) => array.indexOf(value) === index
+  );
+};
+
+export const getIntervalNotes = (dateStart: Date, dateEnd: Date) => {
+  const allKeys: string[] = getAllKeys(dateStart, dateEnd);
+  const notes = { ...store.getState().notes };
+  let intervalNotes = null;
+  if (notes) {
+    const allNotes = allKeys
+      .map((value, index) => {
+        if (notes[allKeys[index]]) {
+          return { [value]: notes[allKeys[index]] };
+        }
+      })
+      .filter((value, index, array) => value !== undefined);
+    if (allNotes.length) {
+      intervalNotes = allNotes;
+    } else {
+      intervalNotes = null;
+    }
+  } else {
+    intervalNotes = null;
+  }
+  return {
+    type: actionTypes.SET_INTERVAL_NOTES,
+    payload: { intervalNotes },
   };
 };

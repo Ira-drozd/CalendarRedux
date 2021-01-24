@@ -1,39 +1,58 @@
 import React from "react";
-import { NotesProps } from "../../../store/type";
+import { DataProps, NotesProps } from "../../../store/type";
+import {
+  setNewSelectedDay,
+  setSelectedDays,
+} from "../../../store/actionCreators";
+import { connect } from "react-redux";
 
 interface DayProps {
   date: Date;
-  year: number;
-  month: number;
-  selectedDay: Date;
-  selectNewDay: (date: Date, key: string) => void;
-  notes: NotesProps | null;
+  getKeyNote: (date: Date) => string;
+  intervalMode: Boolean;
 }
-
-const Day: React.FC<DayProps> = ({
+interface StoreProps {
+  year: number | null;
+  month: number | null;
+  selectedKey: string;
+  notes: NotesProps | null;
+  selectedDays: { date: Date; selectedKey: string }[];
+}
+interface DispatchProps {
+  setNewSelectedDay: (date: Date, selectedKey: string) => void;
+  setSelectedDays: (date: Date, selectedKey: string) => void;
+}
+const Day: React.FC<DayProps & StoreProps & DispatchProps> = ({
   date,
   year,
   month,
-  selectedDay,
-  selectNewDay,
+  selectedKey,
+  setNewSelectedDay,
   notes,
+  getKeyNote,
+  intervalMode,
+  setSelectedDays,
+  selectedDays,
 }) => {
-  const keyNote =
-    date.getFullYear().toString() +
-    date.getMonth().toString() +
-    date.getDate().toString();
+  const keyNote = getKeyNote(date);
 
   let classes: string[] = ["day"];
 
+  if (intervalMode) {
+    if (
+      keyNote === selectedDays[0].selectedKey ||
+      keyNote === selectedDays[1].selectedKey ||
+      (date > selectedDays[0].date && date < selectedDays[1].date)
+    ) {
+      classes.push("selectedDay");
+    }
+  } else {
+    if (keyNote === selectedKey) {
+      classes.push("selectedDay");
+    }
+  }
   if (notes && notes.hasOwnProperty(keyNote)) {
     classes.push("settedNotes");
-  }
-  if (
-    date.getFullYear() === selectedDay.getFullYear() &&
-    date.getMonth() === selectedDay.getMonth() &&
-    date.getDate() === selectedDay.getDate()
-  ) {
-    classes.push("selectedDate");
   }
   if (date.getFullYear() === year && date.getMonth() === month) {
     classes.push("activeDate");
@@ -41,14 +60,39 @@ const Day: React.FC<DayProps> = ({
     classes.push("passiveDate");
   }
 
+  const selectDayHandler = (
+    intervalMode: Boolean,
+    date: Date,
+    keyNote: string
+  ) => {
+    if (intervalMode) {
+      setSelectedDays(date, keyNote);
+    } else {
+      setNewSelectedDay(date, keyNote);
+    }
+  };
+
   return (
     <div
       className={classes.join(" ")}
-      onClick={() => selectNewDay(date, keyNote)}
+      onClick={() => selectDayHandler(intervalMode, date, keyNote)}
     >
       {date.getDate()}
     </div>
   );
 };
 
-export default Day;
+const mapStatesToProps = (state: DataProps): StoreProps => ({
+  year: state.year,
+  month: state.month,
+  notes: state.notes,
+  selectedKey: state.selectedDay.selectedKey,
+  selectedDays: state.selectedDays,
+});
+const mapDispatchToProps = (dispatch: any): DispatchProps => ({
+  setNewSelectedDay: (date: Date, selectedKey: string) =>
+    dispatch(setNewSelectedDay(date, selectedKey)),
+  setSelectedDays: (date: Date, selectedKey: string) =>
+    dispatch(setSelectedDays(date, selectedKey)),
+});
+export default connect(mapStatesToProps, mapDispatchToProps)(React.memo(Day));

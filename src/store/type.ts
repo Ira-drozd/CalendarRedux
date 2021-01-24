@@ -3,7 +3,9 @@ export interface DataProps {
   month: number;
   calendar: Date[] | null;
   selectedDay: { date: Date; selectedKey: string };
+  selectedDays: { date: Date; selectedKey: string }[];
   notes: NotesProps | null;
+  intervalNotes: NotesProps[] | null;
 }
 
 export interface NoteItem {

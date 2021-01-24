@@ -15,23 +15,23 @@ const initialState: DataProps = {
       today.getDate().toString(),
   },
   notes: null,
-  /*{
-    "202103": {
-      "00:00": "qwert 3 00",
-      "00:01": "qwert 3 01",
-      "00:02": "qwert 3 02",
+  selectedDays: [
+    {
+      date: today,
+      selectedKey:
+        today.getFullYear().toString() +
+        today.getMonth().toString() +
+        today.getDate().toString(),
     },
-    "2021020": {
-      "00:08": "qwert 20 00",
-      "00:01": "qwert 20 01",
-      "00:02": "qwert 20 02",
+    {
+      date: today,
+      selectedKey:
+        today.getFullYear().toString() +
+        today.getMonth().toString() +
+        today.getDate().toString(),
     },
-    "2020119": {
-      "00:00": "qwert 19 00",
-      "00:05": "qwert 19 01",
-      "00:02": "qwert 19 02",
-    },
-  },*/
+  ],
+  intervalNotes: null,
 };
 
 const reducer = (
@@ -60,6 +60,16 @@ const reducer = (
       return {
         ...state,
         notes: { ...action.payload.notes },
+      };
+    case actionTypes.SET_SELECTED_DAYS:
+      return {
+        ...state,
+        selectedDays: action.payload.selectedDays,
+      };
+    case actionTypes.SET_INTERVAL_NOTES:
+      return {
+        ...state,
+        intervalNotes: action.payload.intervalNotes,
       };
   }
   return state;

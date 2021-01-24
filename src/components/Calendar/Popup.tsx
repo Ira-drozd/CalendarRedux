@@ -75,4 +75,4 @@ const Popup: React.FC<PopupProps> = ({
   ) : null;
 };
 
-export default Popup;
+export default React.memo(Popup);

@@ -10,9 +10,16 @@ import thunk from "redux-thunk";
 import { CalendarAction, DataProps, DispatchType } from "./store/type";
 import reducer from "./store/reducer";
 
+import { compose } from "redux";
+import { composeWithDevTools } from "redux-devtools-extension";
+
 export const store: Store<DataProps, CalendarAction> & {
   dispatch: DispatchType;
-} = createStore(reducer, applyMiddleware(thunk));
+} = createStore(
+  reducer,
+  compose(applyMiddleware(thunk), composeWithDevTools())
+);
+// } = createStore(reducer, compose(composeWithDevTools(applyMiddleware(thunk))));
 
 ReactDOM.render(
   <Provider store={store}>
